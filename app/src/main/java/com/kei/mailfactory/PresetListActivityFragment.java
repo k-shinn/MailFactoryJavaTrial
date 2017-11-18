@@ -1,6 +1,7 @@
 package com.kei.mailfactory;
 
 import android.content.Context;
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.support.design.internal.NavigationMenuPresenter;
 import android.support.v4.app.Fragment;
@@ -57,7 +58,8 @@ public class PresetListActivityFragment extends Fragment {
             public void onItemClick(View view) {
                 ListData item = ((ListAdapter) recyclerView.getAdapter()).getItem(recyclerView.getChildAdapterPosition(view));
                 // 基本画面の起動
-
+                Intent intent = SetupActivity.createIntent(getContext(), item);
+                getContext().startActivity(intent);
             }
 
             @Override

@@ -5,12 +5,14 @@ import android.databinding.Bindable;
 
 import com.kei.mailfactory.BR;
 
+import java.io.Serializable;
+
 /**
  * PresetListのリストデータBinding
  * Created by kei on 2017/11/18.
  */
 
-public class ListData extends BaseObservable {
+public class ListData extends BaseObservable implements Serializable {
 
     private String title;
 
