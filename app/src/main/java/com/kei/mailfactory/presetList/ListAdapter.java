@@ -43,7 +43,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
                 if (listEventHandler != null) {
                     listEventHandler.onItemLongClick(view);
                 }
-                return false;
+                return true;
             }
         });
         return new ViewHolder(view);

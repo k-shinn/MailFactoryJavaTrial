@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import com.kei.mailfactory.databinding.FragmentPresetListBinding;
 import com.kei.mailfactory.presetList.ListAdapter;
@@ -66,6 +67,11 @@ public class PresetListActivityFragment extends Fragment {
             public void onItemLongClick(View view) {
                 ListData item = ((ListAdapter) recyclerView.getAdapter()).getItem(recyclerView.getChildAdapterPosition(view));
                 // 編集及び削除ダイアログの表示
+                Toast.makeText(getContext(), "LongClick", Toast.LENGTH_SHORT).show();
+
+                // 基本画面の起動
+                Intent intent = SubmitMailActivity.createIntent(getContext());
+                getContext().startActivity(intent);
             }
         });
         recyclerView.setAdapter(listAdapter);
