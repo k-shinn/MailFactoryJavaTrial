@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Email;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -17,6 +18,8 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.kei.mailfactory.databinding.ActivitySubmitMailBinding;
+
+import java.util.Objects;
 
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.OnNeverAskAgain;
@@ -89,12 +92,16 @@ public class SubmitMailActivity extends AppCompatActivity {
             cursor = getContentResolver().query(
                     Email.CONTENT_URI,
                     null,
-                    Email.CONTACT_ID + "=" + id,
+                    null,
                     null,
                     null);
             if (cursor.moveToFirst()) {
+                // TODO: 2018/01/09  CONTACT_IDをQueryで指定するとCursorが取れないのでなんとかしたい。↓のやり方でも結局該当するカラムがわからん
                 do {
-                    emailAddress += cursor.getString(cursor.getColumnIndex(Email.DATA));
+                    String cursorString = cursor.getString(cursor.getColumnIndex(Email.CONTACT_ID));
+                    if (cursorString.equals(id)) {
+                        emailAddress += cursor.getString(cursor.getColumnIndex(Email.DATA));
+                    }
                 } while (cursor.moveToNext());
             }
             Toast.makeText(this, "Address(" + id + "):" + emailAddress, Toast.LENGTH_SHORT).show();
