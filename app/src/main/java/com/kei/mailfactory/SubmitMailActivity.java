@@ -1,28 +1,31 @@
 package com.kei.mailfactory;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Email;
-import android.support.design.widget.FloatingActionButton;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.kei.mailfactory.databinding.ActivitySetupBinding;
 import com.kei.mailfactory.databinding.ActivitySubmitMailBinding;
-import com.kei.mailfactory.presetList.ListData;
 
-import java.net.URI;
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnNeverAskAgain;
+import permissions.dispatcher.OnPermissionDenied;
+import permissions.dispatcher.OnShowRationale;
+import permissions.dispatcher.PermissionRequest;
+import permissions.dispatcher.RuntimePermissions;
 
+@RuntimePermissions
 public class SubmitMailActivity extends AppCompatActivity {
 
     private ActivitySubmitMailBinding binding;
@@ -35,13 +38,11 @@ public class SubmitMailActivity extends AppCompatActivity {
         return intent;
     }
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_submit_mail);
-
 
         setSupportActionBar(binding.toolbar);
 //        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -76,32 +77,65 @@ public class SubmitMailActivity extends AppCompatActivity {
         startActivityForResult(intent, request);
     }
 
-    private String getEmailAddress(Intent data) {
+    @NeedsPermission(Manifest.permission.READ_CONTACTS)
+    void getEmailAddress(Intent data) {
         Cursor cursor = null;
         String emailAddress = "";
         try {
             Uri uri = data.getData();
             String id = uri.getLastPathSegment();
-            Uri email = Uri.parse("content://com.android.contacts/data/emails");
-            grantUriPermission(getPackageName(), email, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//            Uri email = Uri.parse("content://com.android.contacts/data/emails");
+//            grantUriPermission(getPackageName(), email, Intent.FLAG_GRANT_READ_URI_PERMISSION);
             cursor = getContentResolver().query(
                     Email.CONTENT_URI,
                     null,
-                    Email.CONTACT_ID + "=?",
-                    new String[]{id},
+                    Email.CONTACT_ID + "=" + id,
+                    null,
                     null);
             if (cursor.moveToFirst()) {
-                emailAddress = cursor.getString(
-                        cursor.getColumnIndex(Email.DATA));
+                do {
+                    emailAddress += cursor.getString(cursor.getColumnIndex(Email.DATA));
+                } while (cursor.moveToNext());
             }
+            Toast.makeText(this, "Address(" + id + "):" + emailAddress, Toast.LENGTH_SHORT).show();
         } catch (Exception err) {
             err.printStackTrace();
+            Toast.makeText(this, err.toString(), Toast.LENGTH_SHORT).show();
         } finally {
             if (cursor != null)
                 cursor.close();
         }
-        return emailAddress;
+//        return emailAddress;
     }
+
+//    @NeedsPermission(Manifest.permission.READ_CONTACTS)
+//    void getEmailAddressVoid(Intent data) {
+//        Cursor cursor = null;
+//        String emailAddress = "";
+//        try {
+//            Uri uri = data.getData();
+//            String id = uri.getLastPathSegment();
+//            Uri email = Uri.parse("content://com.android.contacts/data/emails");
+////            grantUriPermission(getPackageName(), email, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//            cursor = getContentResolver().query(
+//                    Email.CONTENT_URI,
+//                    null,
+//                    Email.CONTACT_ID + "=?",
+//                    new String[]{id},
+//                    null);
+//            if (cursor.moveToFirst()) {
+//                emailAddress = cursor.getString(
+//                        cursor.getColumnIndex(Email.DATA));
+//            }
+//        } catch (Exception err) {
+//            err.printStackTrace();
+//        } finally {
+//            if (cursor != null)
+//                cursor.close();
+//        }
+//
+////        return emailAddress;
+//    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -110,8 +144,11 @@ public class SubmitMailActivity extends AppCompatActivity {
                 if (data != null && data.getData() != null) {
                     Toast.makeText(this, "To: " + data.getData().toString(), Toast.LENGTH_SHORT).show();
 //                    binding.addressTo.setText(data.getData().toString());
-                    String emailAddress = getEmailAddress(data);
-                    binding.addressTo.setText(emailAddress);
+
+//                    String emailAddress = getEmailAddress(data);
+//                    getEmailAddress(data);
+                    SubmitMailActivityPermissionsDispatcher.getEmailAddressWithPermissionCheck(SubmitMailActivity.this, data);
+//                    binding.addressTo.setText(emailAddress);
                 } else {
                     Toast.makeText(this, "uri Null", Toast.LENGTH_SHORT).show();
                 }
@@ -120,14 +157,21 @@ public class SubmitMailActivity extends AppCompatActivity {
                 if (data != null && data.getData() != null) {
                     Toast.makeText(this, "Cc: " + data.getData().toString(), Toast.LENGTH_SHORT).show();
 //                    binding.addressCc.setText(data.getData().toString());
-                    String emailAddress = getEmailAddress(data);
-                    binding.addressCc.setText(emailAddress);
+//                    String emailAddress = getEmailAddress(data);
+                    getEmailAddress(data);
+//                    binding.addressCc.setText(emailAddress);
                 } else {
                     Toast.makeText(this, "uri Null", Toast.LENGTH_SHORT).show();
                 }
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        SubmitMailActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -153,4 +197,28 @@ public class SubmitMailActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+//
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//    }
+
+    @OnShowRationale(Manifest.permission.READ_CONTACTS)
+    void onShowRationaleReadExternalStorage(final PermissionRequest request) {
+        // すでに１度パーミッションのリクエストが行われていて、
+        // ユーザーに「許可しない（二度と表示しないは非チェック）」をされていると
+        // この処理が呼ばれます。
+        Toast.makeText(this, "パーミッション許可がOFFになっています。", Toast.LENGTH_SHORT).show();
+    }
+
+    @OnPermissionDenied(Manifest.permission.READ_CONTACTS)
+    void onPermissionDeniedReadExternalStorage() {
+        Toast.makeText(this, "リクエストが拒否されました。", Toast.LENGTH_SHORT).show();
+    }
+
+    @OnNeverAskAgain(Manifest.permission.READ_CONTACTS)
+    void onNeverAskAgainReadExternalStorage() {
+        Toast.makeText(this, "パーミッションが拒絶されています。", Toast.LENGTH_SHORT).show();
+    }
+
 }
