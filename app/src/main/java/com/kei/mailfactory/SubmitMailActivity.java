@@ -87,23 +87,16 @@ public class SubmitMailActivity extends AppCompatActivity {
         try {
             Uri uri = data.getData();
             String id = uri.getLastPathSegment();
-//            Uri email = Uri.parse("content://com.android.contacts/data/emails");
-//            grantUriPermission(getPackageName(), email, Intent.FLAG_GRANT_READ_URI_PERMISSION);
             cursor = getContentResolver().query(
                     Email.CONTENT_URI,
                     null,
-                    null,
-                    null,
+                    Email._ID + "=?",
+                    new String[]{id},
                     null);
             if (cursor.moveToFirst()) {
-                // TODO: 2018/01/09  CONTACT_IDをQueryで指定するとCursorが取れないのでなんとかしたい。↓のやり方でも結局該当するカラムがわからん
-                do {
-                    String cursorString = cursor.getString(cursor.getColumnIndex(Email.CONTACT_ID));
-                    if (cursorString.equals(id)) {
-                        emailAddress += cursor.getString(cursor.getColumnIndex(Email.DATA));
-                    }
-                } while (cursor.moveToNext());
+                emailAddress = cursor.getString(cursor.getColumnIndex(Email.DATA));
             }
+            // TODO: 2018/01/09 _IDで取得解決…。コールバックでもらえるようにこの一連の取得処理を別クラスに持っていきたい
             Toast.makeText(this, "Address(" + id + "):" + emailAddress, Toast.LENGTH_SHORT).show();
         } catch (Exception err) {
             err.printStackTrace();
@@ -112,7 +105,6 @@ public class SubmitMailActivity extends AppCompatActivity {
             if (cursor != null)
                 cursor.close();
         }
-//        return emailAddress;
     }
 
 //    @NeedsPermission(Manifest.permission.READ_CONTACTS)
