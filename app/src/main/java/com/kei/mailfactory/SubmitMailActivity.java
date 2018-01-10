@@ -7,7 +7,6 @@ import android.database.Cursor;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Email;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -18,8 +17,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.kei.mailfactory.databinding.ActivitySubmitMailBinding;
-
-import java.util.Objects;
+import com.kei.mailfactory.setupData.SetupData;
 
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.OnNeverAskAgain;
@@ -36,6 +34,10 @@ public class SubmitMailActivity extends AppCompatActivity {
     private static final int ADDRESS_CC_REQUEST = 102;
     private static final int ADDRESS_REQUEST = 100;
 
+    interface GetAddressListener {
+        void onSuccess(String address);
+    }
+
     static Intent createIntent(Context context) {
         Intent intent = new Intent(context, SubmitMailActivity.class);
         return intent;
@@ -46,26 +48,16 @@ public class SubmitMailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_submit_mail);
-
+        SetupData setupData = new SetupData();
+        binding.setSetupData(setupData);
         setSupportActionBar(binding.toolbar);
-//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
-
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                submitMail(binding.getSetupData());
             }
         });
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
+
     }
 
     /**
@@ -81,7 +73,7 @@ public class SubmitMailActivity extends AppCompatActivity {
     }
 
     @NeedsPermission(Manifest.permission.READ_CONTACTS)
-    void getEmailAddress(Intent data) {
+    void getEmailAddress(Intent data, GetAddressListener listener) {
         Cursor cursor = null;
         String emailAddress = "";
         try {
@@ -95,6 +87,9 @@ public class SubmitMailActivity extends AppCompatActivity {
                     null);
             if (cursor.moveToFirst()) {
                 emailAddress = cursor.getString(cursor.getColumnIndex(Email.DATA));
+                if (!emailAddress.isEmpty()) {
+                    listener.onSuccess(emailAddress);
+                }
             }
             // TODO: 2018/01/09 _IDで取得解決…。コールバックでもらえるようにこの一連の取得処理を別クラスに持っていきたい
             Toast.makeText(this, "Address(" + id + "):" + emailAddress, Toast.LENGTH_SHORT).show();
@@ -107,60 +102,29 @@ public class SubmitMailActivity extends AppCompatActivity {
         }
     }
 
-//    @NeedsPermission(Manifest.permission.READ_CONTACTS)
-//    void getEmailAddressVoid(Intent data) {
-//        Cursor cursor = null;
-//        String emailAddress = "";
-//        try {
-//            Uri uri = data.getData();
-//            String id = uri.getLastPathSegment();
-//            Uri email = Uri.parse("content://com.android.contacts/data/emails");
-////            grantUriPermission(getPackageName(), email, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//            cursor = getContentResolver().query(
-//                    Email.CONTENT_URI,
-//                    null,
-//                    Email.CONTACT_ID + "=?",
-//                    new String[]{id},
-//                    null);
-//            if (cursor.moveToFirst()) {
-//                emailAddress = cursor.getString(
-//                        cursor.getColumnIndex(Email.DATA));
-//            }
-//        } catch (Exception err) {
-//            err.printStackTrace();
-//        } finally {
-//            if (cursor != null)
-//                cursor.close();
-//        }
-//
-////        return emailAddress;
-//    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case ADDRESS_TO_REQUEST:
                 if (data != null && data.getData() != null) {
-                    Toast.makeText(this, "To: " + data.getData().toString(), Toast.LENGTH_SHORT).show();
-//                    binding.addressTo.setText(data.getData().toString());
-
-//                    String emailAddress = getEmailAddress(data);
-//                    getEmailAddress(data);
-                    SubmitMailActivityPermissionsDispatcher.getEmailAddressWithPermissionCheck(SubmitMailActivity.this, data);
-//                    binding.addressTo.setText(emailAddress);
-                } else {
-                    Toast.makeText(this, "uri Null", Toast.LENGTH_SHORT).show();
+                    SubmitMailActivityPermissionsDispatcher.getEmailAddressWithPermissionCheck(SubmitMailActivity.this, data,
+                            new GetAddressListener() {
+                                @Override
+                                public void onSuccess(String address) {
+                                    binding.getSetupData().addToAddress(address);
+                                }
+                            });
                 }
                 break;
             case ADDRESS_CC_REQUEST:
                 if (data != null && data.getData() != null) {
-                    Toast.makeText(this, "Cc: " + data.getData().toString(), Toast.LENGTH_SHORT).show();
-//                    binding.addressCc.setText(data.getData().toString());
-//                    String emailAddress = getEmailAddress(data);
-                    getEmailAddress(data);
-//                    binding.addressCc.setText(emailAddress);
-                } else {
-                    Toast.makeText(this, "uri Null", Toast.LENGTH_SHORT).show();
+                    SubmitMailActivityPermissionsDispatcher.getEmailAddressWithPermissionCheck(SubmitMailActivity.this, data,
+                            new GetAddressListener() {
+                                @Override
+                                public void onSuccess(String address) {
+                                    binding.getSetupData().addCcAddress(address);
+                                }
+                            });
                 }
                 break;
         }
@@ -170,7 +134,6 @@ public class SubmitMailActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         SubmitMailActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -182,8 +145,6 @@ public class SubmitMailActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
         switch (item.getItemId()) {
             case R.id.add_to:
                 getAddress(ADDRESS_TO_REQUEST);
@@ -196,11 +157,6 @@ public class SubmitMailActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-//
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//    }
 
     @OnShowRationale(Manifest.permission.READ_CONTACTS)
     void onShowRationaleReadExternalStorage(final PermissionRequest request) {
@@ -218,6 +174,16 @@ public class SubmitMailActivity extends AppCompatActivity {
     @OnNeverAskAgain(Manifest.permission.READ_CONTACTS)
     void onNeverAskAgainReadExternalStorage() {
         Toast.makeText(this, "パーミッションが拒絶されています。", Toast.LENGTH_SHORT).show();
+    }
+
+    void submitMail(SetupData data) {
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:" + data.getToAddress()));
+        intent.putExtra(Intent.EXTRA_CC, data.getCcAddress());
+        intent.putExtra(Intent.EXTRA_BCC, data.getBccAddress());
+        intent.putExtra(Intent.EXTRA_SUBJECT, data.getSubject());
+        intent.putExtra(Intent.EXTRA_TEXT, data.createMessage());
+        startActivity(intent);
     }
 
 }

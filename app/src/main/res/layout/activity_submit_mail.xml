@@ -7,6 +7,10 @@
         <variable
             name="onGetAddressClick"
             type="android.view.View.OnClickListener" />
+
+        <variable
+            name="setupData"
+            type="com.kei.mailfactory.setupData.SetupData" />
     </data>
 
     <android.support.design.widget.CoordinatorLayout xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -35,7 +39,7 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:divider="@drawable/divider_item"
                 android:dividerPadding="20dp"
                 android:orientation="vertical"
@@ -51,13 +55,38 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="0"
-                        android:text="To:" />
+                        android:text="@string/label_title" />
+
+                    <EditText
+                        android:id="@+id/text_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="0"
+                        android:inputType="text"
+                        android:text="@={setupData.subject}" />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0"
+                        android:text="@string/label_to" />
 
                     <TextView
                         android:id="@+id/address_to"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="0" />
+                        android:layout_weight="0"
+                        android:text="@={setupData.toAddress}" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -70,13 +99,64 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="0"
-                        android:text="Co:" />
+                        android:text="@string/label_cc" />
 
                     <TextView
                         android:id="@+id/address_cc"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="0" />
+                        android:layout_weight="0"
+                        android:text="@={setupData.ccAddress}" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_reason" />
+
+                    <!--<Spinner-->
+                    <!--android:id="@+id/reason_spinner"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_marginEnd="8dp"-->
+                    <!--android:layout_marginStart="8dp" />-->
+
+                    <EditText
+                        android:id="@+id/text_reason"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginStart="8dp"
+                        android:inputType="text"
+                        android:text="@={setupData.reason}" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_time" />
+
+                    <EditText
+                        android:id="@+id/text_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginStart="8dp"
+                        android:inputType="text"
+                        android:text="@={setupData.delay}" />
+
                 </LinearLayout>
 
             </LinearLayout>

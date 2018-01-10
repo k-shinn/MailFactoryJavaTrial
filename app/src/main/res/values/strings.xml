@@ -80,4 +80,9 @@
 
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="title_activity_submit_mail">SubmitMailActivity</string>
+    <string name="label_title">Title:</string>
+    <string name="label_to">To:</string>
+    <string name="label_cc">Cc:</string>
+    <string name="label_reason">理由は？</string>
+    <string name="label_time">時間は？</string>
 </resources>

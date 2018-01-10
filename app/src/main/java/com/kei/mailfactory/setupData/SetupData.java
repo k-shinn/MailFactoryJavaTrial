@@ -12,14 +12,19 @@ import com.kei.mailfactory.BR;
 
 public class SetupData extends BaseObservable {
 
-    private String categoryTitle;
-    private String mailTitle;
-    private String[] toAddress;
-    private String[] ccAddress;
-    private String[] bccAddress;
-    private String messageBase;
-    private String reason;
-    private String delay;
+    private static final String PARSER = "<reason>";
+    private String categoryTitle = "";
+    private String subject = "";
+    private String toAddress = "";
+    private String ccAddress = "";
+    private String bccAddress = "";
+    private String messageBase = "";
+    private String reason = "";
+    private String delay = "";
+
+    public SetupData() {
+        messageBase = "各位　お疲れ様です。" + PARSER + "遅刻します。よろしく";
+    }
 
     @Bindable
     public String getCategoryTitle() {
@@ -27,22 +32,22 @@ public class SetupData extends BaseObservable {
     }
 
     @Bindable
-    public String getMailTitle() {
-        return mailTitle;
+    public String getSubject() {
+        return subject;
     }
 
     @Bindable
-    public String[] getToAddress() {
+    public String getToAddress() {
         return toAddress;
     }
 
     @Bindable
-    public String[] getCcAddress() {
+    public String getCcAddress() {
         return ccAddress;
     }
 
     @Bindable
-    public String[] getBccAddress() {
+    public String getBccAddress() {
         return bccAddress;
     }
 
@@ -66,22 +71,32 @@ public class SetupData extends BaseObservable {
         notifyPropertyChanged(BR.categoryTitle);
     }
 
-    public void setMailTitle(String mailTitle) {
-        this.mailTitle = mailTitle;
-        notifyPropertyChanged(BR.mailTitle);
+    public void setSubject(String subject) {
+        this.subject = subject;
+        notifyPropertyChanged(BR.subject);
     }
 
-    public void setToAddress(String[] toAddress) {
+    public void setToAddress(String toAddress) {
         this.toAddress = toAddress;
         notifyPropertyChanged(BR.toAddress);
     }
 
-    public void setCcAddress(String[] ccAddress) {
+    public void addToAddress(String toAddress) {
+        this.toAddress += toAddress;
+        notifyPropertyChanged(BR.toAddress);
+    }
+
+    public void setCcAddress(String ccAddress) {
         this.ccAddress = ccAddress;
         notifyPropertyChanged(BR.ccAddress);
     }
 
-    public void setBccAddress(String[] bccAddress) {
+    public void addCcAddress(String ccAddress) {
+        this.ccAddress += ccAddress;
+        notifyPropertyChanged(BR.ccAddress);
+    }
+
+    public void setBccAddress(String bccAddress) {
         this.bccAddress = bccAddress;
         notifyPropertyChanged(BR.bccAddress);
     }
@@ -99,5 +114,11 @@ public class SetupData extends BaseObservable {
     public void setDelay(String delay) {
         this.delay = delay;
         notifyPropertyChanged(BR.delay);
+    }
+
+    public String createMessage() {
+        String[] split = messageBase.split(PARSER, 2);
+        String createReason = reason + "のため、" + delay;
+        return split[0] + createReason + split[1];
     }
 }
